@@ -16,6 +16,22 @@ pip install -e ".[dev]"
 pip install its_hub
 ```
 
+### DGX Spark Setup (ARM64 / CUDA 13.0)
+```bash
+# For NVIDIA DGX Spark (ARM64, Grace Blackwell, CUDA 13.0)
+
+# 1. Validate environment
+bash scripts/dgx_spark_validate.sh
+
+# 2. Automated setup
+bash scripts/dgx_spark_setup.sh
+
+# 3. Manual verification
+uname -m                    # Should show: aarch64
+nvcc --version             # Should show: CUDA 13.0
+python3 -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
 ### Contribution
 When commit or raising PR, never mention it is by ClaudeCode.
 never say 🤖 Generated with [Claude Code](https://claude.ai/code)" in the commit statment, don't mention claude!

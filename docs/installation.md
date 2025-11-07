@@ -4,7 +4,9 @@
 
 - Python 3.10+ (3.11+ recommended)
 - pip or uv package manager
-- GPU with CUDA 11.8+ (only for `[prm]` installation)
+- GPU with CUDA 11.8+ (CUDA 12.8+ or 13.0 recommended for DGX Spark and latest GPUs)
+  - For PRM installation only
+  - CUDA 13.0 required for NVIDIA DGX Spark (ARM64/Grace Blackwell)
 
 ## Installation Options
 
@@ -73,6 +75,10 @@ pip install its_hub[prm]
 - **Installation time**: 5-10 minutes
 - **GPU required**: Yes (10-20GB VRAM for typical 7B reward models)
 - **Version pinning**: `reward-hub[prm]` pins compatible vLLM + transformers + PyTorch versions
+- **CUDA compatibility**:
+  - CUDA 11.8+: Standard support
+  - CUDA 12.8+: Latest vLLM releases
+  - CUDA 13.0: DGX Spark and Blackwell GPUs (requires NVIDIA Container or compatible builds)
 
 ```python
 # Verify installation
@@ -156,6 +162,84 @@ python -c "from its_hub.algorithms import BestOfN; print('✅ Core OK')"
 # PRM
 python -c "from its_hub.algorithms import ParticleFiltering; print('✅ PRM OK')"
 python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
+---
+
+## DGX Spark Installation
+
+**NVIDIA DGX Spark** is a desktop AI supercomputer featuring ARM64 architecture (Grace Blackwell GB10) with CUDA 13.0 support. Special considerations apply:
+
+### Quick Setup
+
+```bash
+# 1. Download and run validation script
+curl -O https://raw.githubusercontent.com/Red-Hat-AI-Innovation-Team/its_hub/main/scripts/dgx_spark_validate.sh
+bash dgx_spark_validate.sh
+
+# 2. Download and run setup script
+curl -O https://raw.githubusercontent.com/Red-Hat-AI-Innovation-Team/its_hub/main/scripts/dgx_spark_setup.sh
+bash dgx_spark_setup.sh
+```
+
+### Manual Setup
+
+```bash
+# Clone repository
+git clone https://github.com/Red-Hat-AI-Innovation-Team/its_hub.git
+cd its_hub
+
+# Install uv (recommended)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install its_hub
+uv sync --extra dev
+```
+
+### DGX Spark Requirements
+
+- **Architecture**: ARM64 (aarch64)
+- **CUDA**: 13.0 (pre-installed with DGX OS)
+- **OS**: Ubuntu 22.04-based DGX OS
+- **Memory**: 128GB unified memory
+- **GPU**: GB10 Blackwell (6144 CUDA cores)
+
+### Verification
+
+```bash
+# Check system
+uname -m                    # Should show: aarch64
+nvcc --version             # Should show: CUDA 13.0
+
+# Test PyTorch
+python3 << EOF
+import torch
+print(f"PyTorch: {torch.__version__}")
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"CUDA version: {torch.version.cuda}")
+EOF
+
+# Test its_hub
+python3 -c "from its_hub.algorithms import BestOfN; print('✅ its_hub OK')"
+```
+
+### Troubleshooting
+
+**Binary compatibility issues**: Ensure all packages are ARM64-compiled
+```bash
+# Check package architecture
+python3 -c "import platform; print(platform.machine())"
+```
+
+**vLLM installation fails**: Use NVIDIA Container or pip with ARM64 wheels
+```bash
+pip install vllm --extra-index-url https://download.pytorch.org/whl/cu130
+```
+
+**CUDA version mismatch**: Verify CUDA 13.0 toolkit is installed
+```bash
+ls /usr/local/cuda*/version.txt
+cat /usr/local/cuda/version.txt
 ```
 
 ---
