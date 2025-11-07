@@ -174,11 +174,11 @@ python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
 
 ```bash
 # 1. Download and run validation script
-curl -O https://raw.githubusercontent.com/Red-Hat-AI-Innovation-Team/its_hub/main/scripts/dgx_spark_validate.sh
+curl -O https://raw.githubusercontent.com/RobbieJ/its_hub/claude/cuda-13-compatibility-011CUuPMdsZQWQptMNGGSoQo/scripts/dgx_spark_validate.sh
 bash dgx_spark_validate.sh
 
 # 2. Download and run setup script
-curl -O https://raw.githubusercontent.com/Red-Hat-AI-Innovation-Team/its_hub/main/scripts/dgx_spark_setup.sh
+curl -O https://raw.githubusercontent.com/RobbieJ/its_hub/claude/cuda-13-compatibility-011CUuPMdsZQWQptMNGGSoQo/scripts/dgx_spark_setup.sh
 bash dgx_spark_setup.sh
 ```
 
@@ -186,8 +186,11 @@ bash dgx_spark_setup.sh
 
 ```bash
 # Clone repository
-git clone https://github.com/Red-Hat-AI-Innovation-Team/its_hub.git
+git clone https://github.com/RobbieJ/its_hub.git
 cd its_hub
+
+# Checkout compatibility branch
+git checkout claude/cuda-13-compatibility-011CUuPMdsZQWQptMNGGSoQo
 
 # Install uv (recommended)
 curl -LsSf https://astral.sh/uv/install.sh | sh

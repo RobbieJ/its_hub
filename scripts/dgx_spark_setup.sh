@@ -37,7 +37,7 @@ print_info() {
 
 # Configuration
 WORK_DIR="${HOME}/its_hub_testing"
-REPO_URL="https://github.com/Red-Hat-AI-Innovation-Team/its_hub.git"
+REPO_URL="https://github.com/RobbieJ/its_hub.git"
 BRANCH="claude/cuda-13-compatibility-011CUuPMdsZQWQptMNGGSoQo"
 
 print_section "DGX Spark Setup for its_hub"
