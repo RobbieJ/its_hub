@@ -109,14 +109,23 @@ else
     print_info "Installing uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
+    # Source cargo env if it exists
+    if [ -f "$HOME/.cargo/env" ]; then
+        source "$HOME/.cargo/env"
+    fi
+
     # Add to PATH for current session
     export PATH="$HOME/.cargo/bin:$PATH"
 
+    # Verify installation
     if command -v uv &> /dev/null; then
         print_success "uv installed: $(uv --version)"
     else
         print_error "uv installation failed"
-        print_info "Falling back to pip installation method"
+        print_error "uv is required for installation on Ubuntu 24.04+"
+        print_info "Please install manually: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        print_info "Then re-run this script"
+        exit 1
     fi
 fi
 
@@ -139,36 +148,25 @@ fi
 # 6. Install dependencies
 print_section "6. Installing Dependencies"
 
-if command -v uv &> /dev/null; then
-    print_info "Installing with uv (recommended)..."
+print_info "Installing with uv..."
+print_info "This may take 10-15 minutes to download ARM64 packages..."
 
-    # Try dev installation first (includes all extras)
-    if uv sync --extra dev; then
-        print_success "Development dependencies installed"
-    else
-        print_warning "Dev installation failed, trying core only..."
-        if uv sync; then
-            print_success "Core dependencies installed"
-        else
-            print_error "Installation failed with uv"
-            print_info "Check error messages above"
-            exit 1
-        fi
-    fi
+# Try dev installation first (includes all extras)
+if uv sync --extra dev; then
+    print_success "Development dependencies installed"
 else
-    print_info "Installing with pip..."
-
-    # Try dev installation
-    if pip3 install -e ".[dev]"; then
-        print_success "Development dependencies installed"
+    print_warning "Dev installation failed, trying core only..."
+    if uv sync; then
+        print_success "Core dependencies installed"
     else
-        print_warning "Dev installation failed, trying core only..."
-        if pip3 install -e .; then
-            print_success "Core dependencies installed"
-        else
-            print_error "Installation failed with pip"
-            exit 1
-        fi
+        print_error "Installation failed"
+        print_info "Check error messages above for details"
+        print_info ""
+        print_info "Common issues:"
+        print_info "  - Network connectivity (check PyPI access)"
+        print_info "  - ARM64 package availability"
+        print_info "  - Disk space (needs ~3GB)"
+        exit 1
     fi
 fi
 
@@ -176,7 +174,7 @@ fi
 print_section "7. Verifying Installation"
 
 echo "Checking its_hub..."
-if python3 -c "import its_hub" 2>/dev/null; then
+if uv run python -c "import its_hub" 2>/dev/null; then
     print_success "its_hub imported successfully"
 else
     print_error "Cannot import its_hub"
@@ -185,7 +183,7 @@ fi
 
 echo ""
 echo "Checking PyTorch..."
-python3 << 'PYEOF'
+uv run python << 'PYEOF'
 try:
     import torch
     print(f"✅ PyTorch {torch.__version__}")
@@ -199,7 +197,7 @@ PYEOF
 
 echo ""
 echo "Checking vLLM..."
-python3 << 'PYEOF'
+uv run python << 'PYEOF'
 try:
     import vllm
     print(f"✅ vLLM available")
@@ -209,7 +207,7 @@ PYEOF
 
 echo ""
 echo "Checking reward_hub..."
-python3 << 'PYEOF'
+uv run python << 'PYEOF'
 try:
     import reward_hub
     print(f"✅ reward_hub available")
@@ -223,13 +221,8 @@ print_section "8. Running Tests"
 read -p "Run test suite? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if command -v uv &> /dev/null; then
-        print_info "Running tests with uv..."
-        uv run pytest tests/ -v || print_warning "Some tests failed"
-    else
-        print_info "Running tests with pytest..."
-        python3 -m pytest tests/ -v || print_warning "Some tests failed"
-    fi
+    print_info "Running tests with uv..."
+    uv run pytest tests/ -v || print_warning "Some tests failed"
 else
     print_info "Skipping tests"
 fi
