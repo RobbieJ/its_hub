@@ -118,18 +118,35 @@ else
         source "$HOME/.cargo/env"
     fi
 
-    # Verify installation
+    # Clear command hash cache to pick up newly installed uv
+    hash -r 2>/dev/null || true
+
+    # Verify installation - check both via command and direct file
     if command -v uv &> /dev/null; then
         print_success "uv installed: $(uv --version)"
         print_info "uv location: $(which uv)"
+    elif [ -x "$HOME/.local/bin/uv" ]; then
+        print_success "uv installed at $HOME/.local/bin/uv"
+        export PATH="$HOME/.local/bin:$PATH"
+        # Use full path for uv command
+        alias uv="$HOME/.local/bin/uv"
+    elif [ -x "$HOME/.cargo/bin/uv" ]; then
+        print_success "uv installed at $HOME/.cargo/bin/uv"
+        export PATH="$HOME/.cargo/bin:$PATH"
+        # Use full path for uv command
+        alias uv="$HOME/.cargo/bin/uv"
     else
         print_error "uv installation failed"
         print_error "uv is required for installation on Ubuntu 24.04+"
         print_info ""
-        print_info "The installer reported success but uv is not in PATH."
-        print_info "Try adding to PATH manually:"
-        print_info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
-        print_info "Then re-run this script"
+        print_info "The installer reported success but uv binary not found."
+        print_info "Expected locations:"
+        print_info "  - $HOME/.local/bin/uv"
+        print_info "  - $HOME/.cargo/bin/uv"
+        print_info ""
+        print_info "Try running manually:"
+        print_info "  ls -la $HOME/.local/bin/uv"
+        print_info "  $HOME/.local/bin/uv --version"
         exit 1
     fi
 fi
