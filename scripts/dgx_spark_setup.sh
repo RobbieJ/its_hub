@@ -109,21 +109,26 @@ else
     print_info "Installing uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
+    # Add common uv installation paths to PATH
+    # uv can install to either ~/.cargo/bin or ~/.local/bin depending on the system
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
     # Source cargo env if it exists
     if [ -f "$HOME/.cargo/env" ]; then
         source "$HOME/.cargo/env"
     fi
 
-    # Add to PATH for current session
-    export PATH="$HOME/.cargo/bin:$PATH"
-
     # Verify installation
     if command -v uv &> /dev/null; then
         print_success "uv installed: $(uv --version)"
+        print_info "uv location: $(which uv)"
     else
         print_error "uv installation failed"
         print_error "uv is required for installation on Ubuntu 24.04+"
-        print_info "Please install manually: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        print_info ""
+        print_info "The installer reported success but uv is not in PATH."
+        print_info "Try adding to PATH manually:"
+        print_info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
         print_info "Then re-run this script"
         exit 1
     fi
